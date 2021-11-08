@@ -1,9 +1,9 @@
 extends KinematicBody2D
 
-const ACCELERATION = 700
-const MAX_SPEED = 80
-const ROLL_SPEED = 130
-const FRICTION = 700
+export var ACCELERATION = 700
+export var MAX_SPEED = 80
+export var ROLL_SPEED = 130
+export var FRICTION = 700
 
 enum {
 	MOVE,
@@ -15,17 +15,21 @@ var state = MOVE
 
 var velocity = Vector2.ZERO
 var roll_vector = Vector2.LEFT
+var stats = PlayerStats
  
 onready var animationPlayer = $AnimationPlayer
 onready var animationTree = $AnimationTree
 onready	var animationState = animationTree.get("parameters/playback")
 onready var swordCollisionShape = $HitboxPivot/SwordHitbox/CollisionShape2D
 onready var swordHitbox = $HitboxPivot/SwordHitbox
+onready var hurtbox = $Hurtbox
+
 
 func _ready():
 	animationTree.active = true
 	swordCollisionShape.disabled = true
 	swordHitbox.knockback_vector = roll_vector
+	stats.connect("no_health", self, "queue_free")
  
 func _physics_process(delta):
 	match state:
@@ -84,3 +88,9 @@ func attack_animation_finished():
 func roll_animation_finished():
 	state = MOVE
 	velocity = velocity /2
+
+
+func _on_Hurtbox_area_entered(area):
+	stats.health -= 1
+	hurtbox.start_inincibility(0.5)
+	hurtbox.create_hit_effect()
